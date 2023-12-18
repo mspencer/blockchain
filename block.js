@@ -8,16 +8,13 @@ class Block {
         this.hash = hash;
         this.data = data;
     }
-}
 
-const block1 = new Block({
-    data: 'foo-data',
-    lastHash: 'foo-lastHash',
-    hash: 'foo-hash',
-    timestamp: '01/01/01'
-});
-
-console.log('block1: ', block1);
+    const block1 = new Block({
+        data: 'foo-data',
+        lastHash: 'foo-lastHash',
+        hash: 'foo-hash',
+        timestamp: '01/01/01'
+    });
 
     static genesis() {
         // "this" refers to the Block class itself
