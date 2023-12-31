@@ -6,11 +6,16 @@ const CHANNELS = {
 };
 
 class PubSub {
-    constructor(blockchain) {
+    constructor({ blockchain }) {
         this.blockchain = blockchain;
 
         this.publisher = createClient();
         this.subscriber = createClient();
+
+        (async () => {
+            await this.publisher.connect();
+            await this.subscriber.connect();
+        })();
         this.subscribeToChannels();
     }
 
@@ -24,7 +29,6 @@ class PubSub {
     }
 
     async subscribeToChannels() {
-        await this.subscriber.connect();
         Object.values(CHANNELS).forEach(async (channel) => {
             await this.subscriber.subscribe(channel, (message, channel) => { 
                 this.handleMessage(channel, message);
@@ -33,8 +37,9 @@ class PubSub {
     }
 
     async publish({ channel, message }) {
-        await this.publisher.connect();
+        await this.subscriber.unsubscribe(channel);
         await this.publisher.publish(channel, message);
+        await this.subscriber.subscribe(channel);      
     }
 
     broadcastChain() {
