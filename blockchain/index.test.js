@@ -1,6 +1,6 @@
 const Blockchain = require('./index');
 const Block = require('./block');
-const cryptoHash = require('../util/cryptohash');
+const { cryptoHash } = require('../util');
 
 describe('Blockchain', () => {
     let blockchain, newblockchain, originalchain; // use let so it can be reassigned
