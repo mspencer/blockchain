@@ -1,23 +1,26 @@
-const bodyParser = require('body-parser');
-const express = require('express');
-const request = require('request');
-const Blockchain = require('./blockchain');
-const PubSub = require('./app/pubsub');
-const TransactionPool = require('./wallet/transaction-pool');
-const Wallet = require('./wallet');
-const TransactionMiner = require('./app/transaction-miner');
+import bodyParser from 'body-parser';
+//const bodyParser = require('body-parser');
+import express from 'express';
+import request from 'request';
+import path from 'path';
+import Blockchain from  './blockchain/index.js';
+import PubSub from './app/pubsub.js';
+import TransactionPool from './wallet/transaction-pool.js';
+import Wallet from './wallet/index.js';
+import TransactionMiner from './app/transaction-miner.js';
 
 const app = express();
 const blockchain = new Blockchain();
 const transactionPool = new TransactionPool();
 const wallet = new Wallet();
-const pubsub = new PubSub({ blockchain, transactionPool });
+const pubsub = await new PubSub({ blockchain, transactionPool });
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
 
 const DEFAULT_PORT = 3000;
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
 
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'client/dist')));
 
 app.get('/api/blocks', (req, res) => {
     res.json(blockchain.chain);
@@ -69,6 +72,10 @@ app.get('/api/wallet-info', (req,res) => {
     res.json({ address, balance: Wallet.calculateBalance({ chain: blockchain.chain, address })});
 });
 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/dist/index.html'));
+});
+
 const syncWithRootState = () => {
     request({ url: `${ROOT_NODE_ADDRESS}/api/blocks`}, (error, response, body) => {
         if(!error && response.statusCode === 200) {
@@ -88,6 +95,46 @@ const syncWithRootState = () => {
         }
     });
 }
+
+// FRONTEND DEV HELPER >>
+const walletFoo = new Wallet();
+const walletBar = new Wallet();
+
+const generateWalletTransaction = ({ wallet, recipient, amount }) => {
+    const transaction = wallet.createTransaction({
+        recipient, amount, chain: blockchain.chain
+    });
+
+    transactionPool.setTransaction(transaction);
+};
+
+const walletAction = () => generateWalletTransaction({
+    wallet, recipient: walletFoo.publicKey, amount: 5
+});
+
+const walletFooAction = () => generateWalletTransaction({
+    wallet: walletFoo, recipient: walletBar.publicKey, amount: 10
+});
+
+const walletBarAction = () => generateWalletTransaction({
+    wallet: walletBar, recipient: wallet.publicKey, amount: 15
+});
+
+for(let i=0; i<10; i++) {
+    if(i%3 === 0) {
+        walletAction();
+        walletFooAction();
+    } else if(i%3 === 1) {
+        walletAction();
+        walletBarAction();
+    } else {
+        walletFooAction();
+        walletBarAction();
+    }
+
+    transactionMiner.mineTransactions();
+}
+// FRONTEND DEV HELPER <<
 
 let PEER_PORT;
 

@@ -58,4 +58,4 @@ class Wallet {
     }
 };
 
-module.exports = Wallet;
+export default Wallet;

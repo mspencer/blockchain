@@ -1,33 +1,24 @@
 const { createClient } = require('redis');
 
 const CHANNELS = {
-    TEST: 'ch.TEST',
-    BLOCKCHAIN: 'ch.BLOCKCHAIN',
-    TRANSACTION: 'ch.TRANSACTION'
+    TEST: 'TEST',
+    BLOCKCHAIN: 'BLOCKCHAIN',
+    TRANSACTION: 'TRANSACTION'
 };
 
-console.log('1');
 class PubSub {
     constructor({ blockchain, transactionPool }) {
-        console.log('2');
-        return (async () => {
-            console.log('3');
-            this.blockchain = blockchain;
-            this.transactionPool = transactionPool;
+        this.blockchain = blockchain;
+        this.transactionPool = transactionPool;
 
-            const client = createClient()
-            this.publisher = createClient();
-            this.subscriber = client.duplicate();
+        this.publisher = createClient();
+        this.subscriber = createClient();
 
+        (async () => {
             await this.publisher.connect();
             await this.subscriber.connect();
-
-            await this.subscriber.subscribe('ch.*', (message, channel) => {
-                this.handleMessage(channel, message);
-            });
-            console.log('4');
-            return this;
         })();
+        this.subscribeToChannels();
     }
 
     handleMessage(channel, message) {
@@ -51,6 +42,14 @@ class PubSub {
         }
     }
 
+    async subscribeToChannels() {
+        Object.values(CHANNELS).forEach(async (channel) => {
+            await this.subscriber.subscribe(channel, (message, channel) => { 
+                this.handleMessage(channel, message);
+            });
+        });
+    }
+
     async publish({ channel, message }) {
         await this.subscriber.unsubscribe(channel);
         await this.publisher.publish(channel, message);
@@ -72,4 +71,4 @@ class PubSub {
     }
 }
 
-export default PubSub;
+module.exports = PubSub;

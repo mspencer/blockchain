@@ -44,4 +44,4 @@ class TransactionPool {
     }
 }
 
-module.exports = TransactionPool;
+export default TransactionPool;

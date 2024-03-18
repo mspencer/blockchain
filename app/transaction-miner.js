@@ -22,4 +22,4 @@ class TransactionMiner {
     }
 }
 
-module.exports = TransactionMiner;
+export default TransactionMiner;
