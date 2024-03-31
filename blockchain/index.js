@@ -1,8 +1,8 @@
-const Block = require("./block");
-const Transaction = require("../wallet/transaction");
-const Wallet = require("../wallet");
-const { cryptoHash } = require("../util");
-const { REWARD_INPUT, MINING_REWARD } = require("../config");
+import Block from "./block.js";
+import Transaction from "../wallet/transaction.js";
+import Wallet from "../wallet/index.js";
+import { cryptoHash } from "../util/index.js";
+import { REWARD_INPUT, MINING_REWARD } from "../config.js";
 
 class Blockchain {
     constructor() {

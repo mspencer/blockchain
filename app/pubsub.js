@@ -1,4 +1,4 @@
-const { createClient } = require('redis');
+import { createClient } from 'redis';
 
 const CHANNELS = {
     TEST: 'ch.TEST',
@@ -6,32 +6,30 @@ const CHANNELS = {
     TRANSACTION: 'ch.TRANSACTION'
 };
 
-console.log('1');
 class PubSub {
     constructor({ blockchain, transactionPool }) {
-        console.log('2');
         return (async () => {
-            console.log('3');
             this.blockchain = blockchain;
             this.transactionPool = transactionPool;
 
-            const client = createClient()
-            this.publisher = createClient();
+            const client = createClient();
+            await client.connect();
             this.subscriber = client.duplicate();
-
-            await this.publisher.connect();
             await this.subscriber.connect();
 
-            await this.subscriber.subscribe('ch.*', (message, channel) => {
+            this.publisher = createClient();
+            await this.publisher.connect();
+
+            await this.subscriber.pSubscribe('ch.*', (message, channel) => {
+                console.log('inside subscribe()');
                 this.handleMessage(channel, message);
             });
-            console.log('4');
             return this;
         })();
     }
 
     handleMessage(channel, message) {
-        console.log(`Message received. Channel: ${channel}. Message: ${message}.`);
+        console.log(`Message received. Channel: ${channel}.`);
 
         const parsedMessage = JSON.parse(message);
 
@@ -52,9 +50,14 @@ class PubSub {
     }
 
     async publish({ channel, message }) {
-        await this.subscriber.unsubscribe(channel);
+        console.log('::::: publish(): '+channel+' : ');
+        await this.subscriber.pUnsubscribe();
         await this.publisher.publish(channel, message);
-        await this.subscriber.subscribe(channel);      
+        //await this.subscriber.subscribe(channel);
+        await this.subscriber.pSubscribe('ch.*', (message, channel) => {
+            console.log('inside subscribe() inside function publish()');
+            this.handleMessage(channel, message);
+        });
     }
 
     broadcastChain() {

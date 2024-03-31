@@ -1,6 +1,6 @@
-const Transaction = require('./transaction');
-const { STARTING_BALANCE } = require('../config');
-const { ec, cryptoHash } = require('../util');
+import Transaction from './transaction.js';
+import { STARTING_BALANCE } from '../config.js';
+import { ec, cryptoHash } from '../util/index.js';
 
 class Wallet {
     constructor() {

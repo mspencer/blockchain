@@ -1,6 +1,6 @@
-const { v1: uuidv1 } = require('uuid');
-const { verifySignature } = require('../util');
-const { REWARD_INPUT, MINING_REWARD } = require('../config');
+import { v1 as uuidv1 } from 'uuid';
+import { verifySignature } from '../util/index.js';
+import { REWARD_INPUT, MINING_REWARD } from '../config.js';
 
 class Transaction {
     constructor({ senderWallet, recipient, amount, outputMap, input }) {
@@ -70,4 +70,4 @@ class Transaction {
     }
 }
 
-module.exports = Transaction;
+export default Transaction;

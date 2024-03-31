@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import request from 'request';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import Blockchain from  './blockchain/index.js';
 import PubSub from './app/pubsub.js';
 import TransactionPool from './wallet/transaction-pool.js';
@@ -18,6 +19,9 @@ const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wal
 
 const DEFAULT_PORT = 3000;
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'client/dist')));

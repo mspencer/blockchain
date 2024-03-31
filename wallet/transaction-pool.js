@@ -1,4 +1,4 @@
-const Transaction = require('./transaction');
+import Transaction from './transaction.js';
 
 class TransactionPool {
     constructor() {
